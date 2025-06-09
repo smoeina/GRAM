@@ -30,7 +30,7 @@ In this work, we proposed the GRAM method as an interpretable approach for anoma
 
 2. **Code**
 
-  Use the main.py to run the experiments.
+    Use the main.py to run the experiments.
 
    
 
