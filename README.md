@@ -5,7 +5,6 @@ This repository provides the implementation for the algorithms presented in the 
 ## Table of Contents
 
 - [Overview](#overview)
-- [Setup](#setup)
 - [Usage](#usage)
 - [Acknowledgements](#acknowledgements)
 - [References](#references)
@@ -20,8 +19,6 @@ In this work, we proposed the GRAM method as an interpretable approach for anoma
 - **GAAN** [[3]](https://dl.acm.org/doi/abs/10.1145/3340531.3412070).
 - **CONAD** [[4]](https://par.nsf.gov/servlets/purl/10357529).
 - **OC-GNN** [[5]](https://link.springer.com/content/pdf/10.1007/s00521-021-05924-9.pdf).
-
-## Setup
 
 ## Usage
 
