@@ -173,7 +173,8 @@ class GRAM(BaseDetector):
         for epoch in range(self.epoch):
             epoch_loss = 0     
             t = 0
-            for data in loader:  
+            for data in loader:
+                data = data.to(self.device)
                 x_, z = self.model(data.x, data.edge_index)
                 loss, loss_kl = self.loss_func(data.x, x_, z, data.edge_index)
                 epoch_loss += loss_kl.item()

@@ -5,6 +5,7 @@ from torch_geometric.data import Data
 from gram import GRAM
 from dominant import DOMINANT
 from conad import CONAD
+from gram_v2 import GNNVariant
 from guide import GUIDE
 from gcnae import GCNAE
 from gaan import GAAN
@@ -13,10 +14,7 @@ import random
 from sklearn.metrics import roc_auc_score, average_precision_score
 from util import load_data
 
-
 random.seed(12345)
-
-
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 torch.manual_seed(12345)
 
@@ -35,21 +33,18 @@ for graph in graphs:
         in_feats = graph.node_features.shape[1]
         adj_feats = graph.node_features.shape[0]
     else:
-        x = torch.ones((graph.node_features.shape[0], in_feats), dtype=torch.float)   
+        x = torch.ones((graph.node_features.shape[0], in_feats), dtype=torch.float)
     edge_index = torch.tensor(graph.edge_mat.clone().detach().T, dtype=torch.long).t().contiguous()
     y = torch.tensor([graph.label], dtype=torch.long)
     data = Data(x=x, edge_index=edge_index, y=y).to(device)
     dataset.append(data)
-
 
 train_dataset = dataset[167:]
 train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
 test_dataset = dataset[137:167]
 test_loader = DataLoader(test_dataset, batch_size=1)
 
-
-method = 'gram'
-# method = 'dominant'
+method = 'gnn_variant'  # <-- set active method
 
 if method == 'gram':
     model = GRAM()
@@ -65,87 +60,49 @@ elif method == 'gaan':
     model = GAAN()
 elif method == 'ocgnn':
     model = OCGNN()
+elif method == 'gnn_variant':
+    model = GNNVariant(
+        in_channels=in_feats,
+        hidden_channels=64,
+        num_layers=3,
+        out_channels=num_classes,
+        dropout=0.5,
+        gnn_type='gatv2'
+    ).to(device)
 
-
-
-if method == 'gram':
-    model.fit(train_loader, in_feats)
-elif method == 'dominant':
-    model.fit(train_loader, in_feats)
-elif method == 'conad':
+# Train model
+if method in ['gram', 'dominant', 'conad', 'gcnae', 'gaan', 'ocgnn']:
     model.fit(train_loader, in_feats)
 elif method == 'guide':
     model.fit(train_loader, in_feats, adj_feats)
-elif method == 'gcnae':
-    model.fit(train_loader, in_feats)
-elif method == 'gaan':
-    model.fit(train_loader, in_feats)
-elif method == 'ocgnn':
-    model.fit(train_loader, in_feats)
+elif method == 'gnn_variant':
+    model.fit(train_loader, device=device)
 
+# Test model
 t = 0
 score_pred = np.zeros(len(test_dataset))
 graph_label = np.zeros(len(test_dataset))
 
 for data in test_loader:
-    if data.y == 1:
-        y_label = 1
-    else:
-        y_label = 0
+    y_label = 1 if data.y == 1 else 0
+    data = data.to(device)
 
     if method == 'gram':
-        data = data.to(device)
         scores = model.gradcam(data)
-        print('scores')
-        print(scores)
-        score_pred[t] = sum(scores)
-        graph_label[t] = y_label
-    elif method == 'dominant':
-        data = data.to(device)
+    elif method in ['dominant', 'conad', 'guide', 'gcnae', 'gaan', 'ocgnn']:
         scores = model.decision_function(data)
-        print('scores')
-        print(scores)
-        score_pred[t] = sum(scores)
-        graph_label[t] = y_label
-    elif method == 'conad':
-        data = data.to(device)
+    elif method == 'gnn_variant':
         scores = model.decision_function(data)
-        print('scores')
-        print(scores)
-        score_pred[t] = sum(scores)
-        graph_label[t] = y_label
-    elif method == 'guide':
-        data = data.to(device)
-        scores = model.decision_function(data)
-        print('scores')
-        print(scores)
-        score_pred[t] = sum(scores)
-        graph_label[t] = y_label
-    elif method == 'gcnae':
-        data = data.to(device)
-        scores = model.decision_function(data)
-        print('scores')
-        print(scores)
-        score_pred[t] = sum(scores)
-        graph_label[t] = y_label
-    elif method == 'gaan':
-        data = data.to(device)
-        scores = model.decision_function(data)
-        print('scores')
-        print(scores)
-        score_pred[t] = sum(scores)
-        graph_label[t] = y_label
-    elif method == 'ocgnn':
-        data = data.to(device)
-        scores = model.decision_function(data)
-        print('scores')
-        print(scores)
-        score_pred[t] = sum(scores)
-        graph_label[t] = y_label
+    else:
+        raise NotImplementedError(f"Unknown method: {method}")
+
+    print('scores')
+    print(scores)
+    score_pred[t] = sum(scores)
+    graph_label[t] = y_label
     t += 1
 
 graph_roc_auc = roc_auc_score(graph_label, score_pred)
 graph_ap = average_precision_score(graph_label, score_pred)
 
 print(f'AUC graph: {graph_roc_auc:.6f}, AP graph: {graph_ap:.6f}')
-
