@@ -1,4 +1,4 @@
-```
+
 # GRAM & Temporal GRAM: Unified Graph Anomaly Detection Framework
 
 This repository contains both the original **GRAM** (Graph Reconstruction-based Anomaly Model) and its temporal extension **Temporal GRAM**, offering state-of-the-art tools for spatial and temporal graph anomaly detection using GNNs, VAEs, and explainability methods.
@@ -160,4 +160,4 @@ results = trainer.evaluate(training_data)
 MIT License – see `LICENSE` file for details.
 
 ---
-```
+
