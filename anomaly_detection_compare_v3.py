@@ -1,3 +1,5 @@
+import os                      # ← NEW
+import contextlib              # ← NEW
 import torch
 import numpy as np
 from torch_geometric.loader import DataLoader
@@ -6,7 +8,6 @@ from sklearn.metrics import roc_auc_score, average_precision_score
 import warnings
 import time
 from collections import defaultdict
-
 # Import models
 from gram import GRAM
 from gram_v2 import GNNVariantAnomalyDetector
@@ -24,20 +25,75 @@ from metrics import (
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print(f"Using device: {device}")
 
+# ---------- Runtime perf knobs ----------
+# Limit/coordinate CPU threads so dataloader doesn't thrash the CPU
+try:
+    torch.set_num_threads(min(8, os.cpu_count() or 8))
+    torch.set_num_interop_threads(min(8, os.cpu_count() or 8))
+except Exception:
+    pass
+
+if device.type == 'cuda':
+    try:
+        torch.backends.cudnn.benchmark = True
+    except Exception:
+        pass
+    # PyTorch 2.x: Slightly lower precision matmuls often speed up kernels
+    try:
+        torch.set_float32_matmul_precision("medium")
+    except Exception:
+        pass
+
 # Configuration
 config = {
-    'epochs': 200,
-    'batch_size': 32,
-    'train_split': 0.75,
+    'epochs': 100,
+    'batch_size': 16,
+    'train_split': 0.70,
     'early_stopping_patience': 50,
-    'min_improvement': 1e-4
+    'min_improvement': 1e-4,
+    # ---- NEW: pipeline knobs (tuned for CUDA) ----
+    'num_workers': max(2, (os.cpu_count() or 4) // 2),
+    'prefetch_factor': 4,
+    'persistent_workers': True
 }
-
+def _loader_kwargs_for_device():
+    """Return DataLoader kwargs tuned for current device."""
+    if device.type == 'cuda':
+        kw = dict(
+            num_workers=config['num_workers'],
+            pin_memory=True,
+            persistent_workers=config['persistent_workers']
+        )
+        # prefetch_factor is only valid when num_workers > 0
+        if config['num_workers'] > 0:
+            kw['prefetch_factor'] = config['prefetch_factor']
+        # PyTorch ≥2.0 supports pin_memory_device
+        if 'pin_memory_device' in DataLoader.__init__.__code__.co_varnames:
+            kw['pin_memory_device'] = 'cuda'
+        return kw
+    # CPU-only: fewer workers prevents oversubscription
+    return dict(num_workers=max(1, (os.cpu_count() or 2) // 4), pin_memory=False)
+def _place_model_on_device(model, device):
+    """Best-effort move of custom wrappers/modules to target device."""
+    # Many custom wrappers expose .model (nn.Module) and/or .to()
+    try:
+        if hasattr(model, 'to'):
+            model.to(device)
+    except Exception:
+        pass
+    try:
+        if hasattr(model, 'model') and hasattr(model.model, 'to'):
+            model.model.to(device)
+    except Exception:
+        pass
+    try:
+        if hasattr(model, 'device'):
+            model.device = device
+    except Exception:
+        pass
 # List of datasets to evaluate
 datasets_to_run = [
-    'MUTAG', 'NCI1', 'PROTEINS',
-    'IMDB-BINARY', 'REDDIT-BINARY',
-    'IMDB-MULTI', 'REDDIT-MULTI-5K'
+    'ER_MD','MUTAG','highschool_ct1'
 ]
 
 # Model configurations for GRAM v3
@@ -168,69 +224,83 @@ def evaluate_model_with_interpretability(model, test_loader, model_name, device)
     graph_labels = []
     interpretability_scores = []
 
+    def _run_decision_function(m, d, allow_interp):
+        if allow_interp:
+            try:
+                out = m.decision_function(d, return_interpretability=True)
+                if isinstance(out, tuple) and len(out) == 2:
+                    return out  # (scores, interp)
+                return m.decision_function(d), None
+            except TypeError:
+                return m.decision_function(d), None
+        else:
+            return m.decision_function(d), None
+
+    # ---- NEW: autocast context only on CUDA ----
+    autocast_ctx = torch.autocast(device_type='cuda', dtype=torch.float16) if device.type == 'cuda' else contextlib.nullcontext()
+
     with torch.no_grad():
+        # keep this outside the loop
+        autocast_eval = (torch.autocast(device_type='cuda', dtype=torch.float16)
+                         if device.type == 'cuda' else contextlib.nullcontext())
+
         for data in test_loader:
             y_label = int(data.y.item())
-            data = data.to(device)
+            data = data.to(device, non_blocking=(device.type == 'cuda'))
 
             try:
-                # Get anomaly scores with better error handling
-                scores = None
+                scores, interp = None, None
+                prefer_gradcam = model_name.lower() == 'gram_original'
 
-                if hasattr(model, 'decision_function'):
-                    if 'v3' in model_name.lower():
-                        # GRAM v3 with interpretability
-                        try:
-                            result = model.decision_function(data, return_interpretability=True)
-                            if isinstance(result, tuple) and len(result) == 2:
-                                scores, interp = result
-                                interpretability_scores.append(interp)
-                            else:
-                                scores = model.decision_function(data)
-                                interpretability_scores.append(None)
-                        except Exception as e:
-                            print(f"Warning: Interpretability failed for {model_name}: {e}")
-                            scores = model.decision_function(data)
-                            interpretability_scores.append(None)
-                    else:
-                        # GRAM v2 and other models
-                        scores = model.decision_function(data)
-                        interpretability_scores.append(None)
+                # ---- 1) Prefer GRAD-CAM for GRAM_Original (needs gradients, run in FP32) ----
+                if prefer_gradcam and hasattr(model, 'gradcam'):
+                    with torch.enable_grad(), torch.cuda.amp.autocast(
+                            enabled=False) if device.type == 'cuda' else contextlib.nullcontext():
+                        if hasattr(model, 'zero_grad'):
+                            model.zero_grad(set_to_none=True)
+                        if hasattr(model, 'model') and hasattr(model.model, 'zero_grad'):
+                            model.model.zero_grad(set_to_none=True)
+                        scores = model.gradcam(data)
 
-                elif hasattr(model, 'gradcam'):
-                    # Original GRAM
-                    scores = model.gradcam(data)
-                    interpretability_scores.append(None)
-                else:
-                    raise ValueError(f"Unknown model type: {model_name} - no valid scoring method found")
+                # ---- 2) Try decision_function under no_grad (cheap, no gradients) ----
+                if scores is None and hasattr(model, 'decision_function'):
+                    allow_interp = 'v3' in model_name.lower()
+                    with torch.no_grad(), autocast_eval:
+                        scores, interp = _run_decision_function(model, data, allow_interp)
 
-                # Debug: Check what we got
+                # ---- 3) Fallback to GRAD-CAM if needed (again needs gradients) ----
+                if scores is None and hasattr(model, 'gradcam'):
+                    with torch.enable_grad(), torch.cuda.amp.autocast(
+                            enabled=False) if device.type == 'cuda' else contextlib.nullcontext():
+                        if hasattr(model, 'zero_grad'):
+                            model.zero_grad(set_to_none=True)
+                        if hasattr(model, 'model') and hasattr(model.model, 'zero_grad'):
+                            model.model.zero_grad(set_to_none=True)
+                        scores = model.gradcam(data)
+
+                # ---- aggregation (unchanged) ----
                 if scores is None:
                     print(f"Warning: {model_name} returned None scores for sample {len(score_pred)}")
-                    print(f"Model type: {type(model)}")
-                    print(f"Available methods: {[m for m in dir(model) if not m.startswith('_')]}")
-                    # Use a default score
                     graph_score = 0.5
                 else:
-                    # Aggregate scores for graph-level prediction
                     if isinstance(scores, np.ndarray):
-                        if len(scores.shape) > 0 and scores.size > 0:
-                            graph_score = np.sum(scores)
-                        else:
-                            graph_score = float(scores) if scores.size == 1 else 0.5
+                        graph_score = float(scores.sum()) if scores.size > 1 else float(scores)
+                    elif isinstance(scores, torch.Tensor):
+                        graph_score = float(scores.sum().detach().cpu()) if scores.numel() > 1 else float(
+                            scores.detach().cpu())
                     elif isinstance(scores, (int, float)):
                         graph_score = float(scores)
-                    elif isinstance(scores, torch.Tensor):
-                        graph_score = float(scores.sum().cpu()) if scores.numel() > 1 else float(scores.cpu())
                     else:
                         print(f"Warning: Unexpected score type {type(scores)} from {model_name}")
                         graph_score = 0.5
 
+                interpretability_scores.append(interp)
+
             except Exception as e:
                 print(f"Error evaluating {model_name} on sample {len(score_pred)}: {e}")
-                import traceback
+                import traceback;
                 traceback.print_exc()
-                graph_score = 0.5  # Default fallback score
+                graph_score = 0.5
                 interpretability_scores.append(None)
 
             score_pred.append(graph_score)
@@ -239,7 +309,6 @@ def evaluate_model_with_interpretability(model, test_loader, model_name, device)
     score_pred = np.array(score_pred)
     graph_labels = np.array(graph_labels)
 
-    # Handle NaN values
     if np.isnan(score_pred).any():
         print(f"Warning: NaN detected in {model_name} scores. Replacing with median.")
         median_score = np.nanmedian(score_pred)
@@ -247,23 +316,15 @@ def evaluate_model_with_interpretability(model, test_loader, model_name, device)
             median_score = 0.5
         score_pred = np.nan_to_num(score_pred, nan=median_score)
 
-    # Debug: Print score statistics
     print(f"Score statistics for {model_name}:")
     print(f"  Min: {np.min(score_pred):.4f}, Max: {np.max(score_pred):.4f}")
     print(f"  Mean: {np.mean(score_pred):.4f}, Std: {np.std(score_pred):.4f}")
     print(f"  Unique values: {len(np.unique(score_pred))}")
 
-    # Compute comprehensive metrics
     metrics = compute_comprehensive_metrics(graph_labels, score_pred)
-
-    # Add additional info
-    metrics.update({
-        'scores': score_pred,
-        'labels': graph_labels,
-        'interpretability': interpretability_scores
-    })
-
+    metrics.update({'scores': score_pred, 'labels': graph_labels, 'interpretability': interpretability_scores})
     return metrics
+
 
 
 def train_with_early_stopping(model, train_loader, patience=50, min_improvement=1e-4):
@@ -288,33 +349,37 @@ def test_model_interface(model, test_data, model_name):
     print(f"Testing interface for {model_name}...")
 
     try:
-        # Test if model has the expected methods
+        used_any = False
+
         if hasattr(model, 'decision_function'):
             print(f"  ✓ Has decision_function method")
-            # Test with a single sample
             test_scores = model.decision_function(test_data)
             print(f"  ✓ decision_function returns: {type(test_scores)}")
             if test_scores is not None:
-                print(f"    Shape/Value: {test_scores.shape if hasattr(test_scores, 'shape') else test_scores}")
+                shape_or_val = getattr(test_scores, 'shape', None)
+                print(f"    Shape/Value: {shape_or_val if shape_or_val is not None else test_scores}")
+                used_any = True
             else:
                 print(f"    Warning: decision_function returned None")
 
-        elif hasattr(model, 'gradcam'):
-            print(f"  ✓ Has gradcam method")
-            test_scores = model.gradcam(test_data)
-            print(f"  ✓ gradcam returns: {type(test_scores)}")
-            if test_scores is not None:
-                print(f"    Shape/Value: {test_scores.shape if hasattr(test_scores, 'shape') else test_scores}")
+        # Try gradcam either when preferred for GRAM_Original or when decision_function was None
+        if hasattr(model, 'gradcam') and (model_name.lower() == 'gram_original' or not used_any):
+            print(f"  ✓ Has gradcam method (fallback check)")
+            gc_scores = model.gradcam(test_data)
+            print(f"  ✓ gradcam returns: {type(gc_scores)}")
+            if gc_scores is not None:
+                shape_or_val = getattr(gc_scores, 'shape', None)
+                print(f"    Shape/Value: {shape_or_val if shape_or_val is not None else gc_scores}")
+                used_any = True
             else:
                 print(f"    Warning: gradcam returned None")
-        else:
-            print(f"  ✗ No valid scoring method found")
-            print(f"    Available methods: {[m for m in dir(model) if not m.startswith('_')]}")
+
+        if not used_any:
+            print(f"  ✗ No valid scoring output (both methods returned None)")
 
     except Exception as e:
         print(f"  ✗ Interface test failed: {e}")
-        import traceback
-        traceback.print_exc()
+        import traceback; traceback.print_exc()
 
     print("Interface test completed.\n")
 
@@ -325,7 +390,7 @@ def prepare_dataset(dataset_name):
         dataset = TUDataset(root='./dataset', name=dataset_name)
         print(f'Loaded {len(dataset)} graphs from {dataset_name}')
 
-        # Check if dataset has features
+        # Features
         if hasattr(dataset[0], 'x') and dataset[0].x is not None:
             in_feats = dataset[0].x.shape[1]
             print(f'Dataset has {in_feats} node features')
@@ -335,20 +400,35 @@ def prepare_dataset(dataset_name):
             for data in dataset:
                 data.x = torch.ones((data.num_nodes, in_feats))
 
-        # Shuffle and split
+        # Shuffle & split
         dataset = dataset.shuffle()
         split_idx = int(config['train_split'] * len(dataset))
         train_dataset = dataset[:split_idx]
         test_dataset = dataset[split_idx:]
 
-        train_loader = DataLoader(train_dataset, batch_size=config['batch_size'], shuffle=True)
-        test_loader = DataLoader(test_dataset, batch_size=1, shuffle=False)
+        # ---- NEW: tuned loader kwargs ----
+        loader_kwargs = _loader_kwargs_for_device()
+
+        train_loader = DataLoader(
+            train_dataset,
+            batch_size=config['batch_size'],
+            shuffle=True,
+            **loader_kwargs
+        )
+        # keep test batch_size=1 to stay simple per-graph
+        test_loader = DataLoader(
+            test_dataset,
+            batch_size=1,
+            shuffle=False,
+            **loader_kwargs
+        )
 
         return train_loader, test_loader, in_feats, len(train_dataset), len(test_dataset)
 
     except Exception as e:
         print(f"Error loading dataset {dataset_name}: {e}")
         return None, None, None, None, None
+
 
 
 def initialize_models(in_feats):
@@ -417,12 +497,14 @@ for dataset_name in datasets_to_run:
     if not models:
         print(f"No models could be initialized for {dataset_name}")
         continue
-
+    for _m in models.values():
+        _place_model_on_device(_m, device)
     # Train and evaluate each model
     dataset_results = {}
 
     # Get a test sample for interface testing
-    test_sample = next(iter(test_loader)).to(device)
+    test_sample = next(iter(test_loader)).to(device, non_blocking=(device.type == 'cuda'))
+
 
     for model_name, model in models.items():
         print(f'\n--- Training {model_name} ---')
