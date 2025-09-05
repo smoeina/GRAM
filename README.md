@@ -39,7 +39,9 @@ GRAM/
 │   │   └── flexible_dataset_adapter.py # Dataset loading utilities
 │   └── examples/
 │       ├── guide.py                   # Usage examples
-│       └── [example_files].py         # Additional examples
+│       ├── simple_ptc_gram_2.py       # PTC dataset analysis with classic ML comparison
+│       ├── read files pt.py           # Data file reader utilities
+│       └── read files.py              # General file reading utilities
 ├── tests/
 │   ├── anomaly_detection_compare_v3.py # Comprehensive model comparison
 │   ├── compare_faster_gram_v2.py      # GRAM vs Fast_GRAM benchmarking
@@ -48,6 +50,10 @@ GRAM/
 ├── dataset/
 │   └── PTC/                           # Sample dataset with train/test splits
 ├── train_model/                       # Saved model checkpoints
+├── results/                           # Analysis results and visualizations
+│   ├── anomaly_distribution_classicML_gram.png    # Anomaly score distribution
+│   ├── confusion_matrices_classicML_gram.png      # Confusion matrices for top models
+│   └── model_comparison_classicML_gram.png        # Comprehensive model comparison
 ├── notebooks/
 │   └── Playground.ipynb               # Interactive experimentation
 ├── evaluation_results.png             # Performance visualization
@@ -147,6 +153,26 @@ trainer.train_epoch(training_data)
 results = trainer.evaluate(training_data)
 ```
 
+### 5. PTC Dataset Analysis with Classic ML Comparison
+
+```bash
+python src/examples/simple_ptc_gram_2.py
+```
+
+This comprehensive analysis script provides:
+
+- **GRAM-based Anomaly Detection**: Uses pre-trained GRAM model for anomaly scoring
+- **Classic ML Comparison**: Tests 10 different classifiers on anomaly features
+- **Comprehensive Evaluation**: Cross-validation, confusion matrices, and performance metrics
+- **Rich Visualizations**: Anomaly distributions, model comparisons, and confusion matrices
+
+**Features:**
+- Multiple anomaly scoring methods (distance-based, z-score, reconstruction error, degree anomaly)
+- Enhanced feature extraction with anomaly scores
+- 10 classic ML classifiers: Random Forest, Gradient Boosting, Extra Trees, AdaBoost, Neural Network, SVM, Logistic Regression, K-NN, Naive Bayes, Decision Tree
+- 5-fold cross-validation with statistical analysis
+- Comprehensive visualization suite
+
 ---
 
 ## 📊 Model Features
@@ -234,6 +260,23 @@ From synthetic temporal graph evaluation:
 }
 ```
 
+### PTC Dataset Analysis Results
+
+**Anomaly Distribution Analysis:**
+![Anomaly Distribution](./results/anomaly_distribution_classicML_gram.png)
+
+**Model Performance Comparison:**
+![Model Comparison](./results/model_comparison_classicML_gram.png)
+
+**Confusion Matrices for Top Models:**
+![Confusion Matrices](./results/confusion_matrices_classicML_gram.png)
+
+**Key Findings:**
+- **Best Performing Models**: Random Forest and Gradient Boosting consistently achieve highest F1-scores
+- **Anomaly Detection**: GRAM successfully identifies anomalous patterns in PTC molecular graphs
+- **Feature Quality**: Enhanced features combining GRAM embeddings with anomaly scores provide strong discriminative power
+- **Cross-Validation**: Robust performance across 5-fold CV with low variance
+
 ---
 
 ## 🧠 Key Innovations
@@ -257,6 +300,12 @@ From synthetic temporal graph evaluation:
 - **Modular Design**: Easy to swap GNN backbones, decoders, and loss functions
 - **Configuration-driven**: Extensive hyperparameter control
 - **Extensible Framework**: Simple to add new model variants
+
+### 5. Classic ML Integration
+- **Hybrid Approach**: Combines deep learning anomaly detection with classic ML classification
+- **Multiple Scoring Methods**: Distance-based, z-score, reconstruction error, and degree anomaly
+- **Comprehensive Evaluation**: 10 different classifiers with cross-validation
+- **Rich Visualizations**: Anomaly distributions, model comparisons, and confusion matrices
 
 ---
 
@@ -322,6 +371,57 @@ from src.utils.metrics import (
 )
 ```
 
+### PTC Analysis Classes
+
+```python
+class GRAM_Detector:
+    def __init__(self, model_path, device='cpu'):
+        """Initialize GRAM detector with pre-trained model"""
+    
+    def load_model(self, in_dim, hid_dim=64, latent_size=32, num_layers=4, dropout=0.1, act='relu'):
+        """Load pre-trained GRAM model"""
+    
+    def detect_anomalies(self, graphs, threshold_percentile=85):
+        """
+        Detect anomalies using multiple scoring methods
+        
+        Returns:
+            X_anomaly: Anomaly features
+            y_anomaly: Anomaly labels
+            threshold: Detection threshold
+            all_scores: All anomaly scores
+        """
+
+class AnomalyClassifier:
+    def __init__(self):
+        """Initialize 10 different classic ML classifiers"""
+    
+    def train(self, X_train, y_train):
+        """Train all classifiers on anomaly features"""
+    
+    def predict(self, X_test):
+        """Make predictions with all classifiers"""
+    
+    def cross_validate(self, X, y, cv=5):
+        """Perform cross-validation for all classifiers"""
+    
+    def evaluate(self, y_true, predictions):
+        """Evaluate all classifiers and return metrics"""
+
+class ResultsVisualizer:
+    def __init__(self, save_dir='./results'):
+        """Initialize visualizer with save directory"""
+    
+    def plot_anomaly_distribution(self, all_scores, threshold):
+        """Plot anomaly score distribution analysis"""
+    
+    def plot_model_comparison(self, results, cv_results=None):
+        """Plot comprehensive model comparison charts"""
+    
+    def plot_confusion_matrices(self, y_true, predictions, top_n=4):
+        """Plot confusion matrices for top performing models"""
+```
+
 ---
 
 ## 🧪 Examples
@@ -384,6 +484,39 @@ custom_model = GNNVariantAnomalyDetector(
     lr=1e-4,                  # Lower learning rate
     epochs=500                # More training epochs
 )
+```
+
+### 4. PTC Dataset Analysis with Classic ML
+
+```python
+from src.examples.simple_ptc_gram_2 import GRAM_Detector, AnomalyClassifier, PTCDataLoader
+
+# Load PTC dataset
+loader = PTCDataLoader("./data")
+graphs = loader.load_data()
+
+# Initialize GRAM detector with pre-trained model
+detector = GRAM_Detector("./train_model/gram/PTC/model.pth", device='cuda')
+detector.load_model(in_dim=graphs[0].x.shape[1], hid_dim=128, latent_size=64)
+
+# Detect anomalies with multiple scoring methods
+X_anomaly, y_anomaly, threshold, all_scores = detector.detect_anomalies(
+    graphs, threshold_percentile=75
+)
+
+# Train multiple classic ML classifiers
+classifier = AnomalyClassifier()
+classifier.train(X_train, y_train)
+
+# Evaluate and compare performance
+predictions, probabilities = classifier.predict(X_test)
+results = classifier.evaluate(y_test, predictions)
+
+# Generate comprehensive visualizations
+visualizer = ResultsVisualizer()
+visualizer.plot_anomaly_distribution(all_scores, threshold)
+visualizer.plot_model_comparison(results)
+visualizer.plot_confusion_matrices(y_test, predictions)
 ```
 
 ---
