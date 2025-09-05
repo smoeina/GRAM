@@ -1,4 +1,4 @@
-# GRAM: Graph Reconstruction-based Anomaly Model
+# NXTGRAM: An Interpretable Approach for Graph Anomaly Detection using Gradient Attention Maps
 
 A comprehensive framework for graph anomaly detection featuring multiple model variants, advanced interpretability, and state-of-the-art performance on graph datasets.
 
@@ -6,7 +6,7 @@ A comprehensive framework for graph anomaly detection featuring multiple model v
 
 ## 🔍 Overview
 
-**GRAM** (Graph Reconstruction-based Anomaly Model) is a unified framework that provides multiple implementations for graph anomaly detection, ranging from the original VAE-based approach to advanced variants with modern GNN architectures and interpretability features.
+**GRAM** (GRAM: An Interpretable Approach for Graph Anomaly Detection using Gradient Attention Maps) is a unified framework that provides multiple implementations for graph anomaly detection, ranging from the original VAE-based approach to advanced variants with modern GNN architectures and interpretability features.
 
 ### Model Variants:
 
