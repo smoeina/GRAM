@@ -600,9 +600,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📞 Support
 
-- **Issues**: [GitHub Issues](https://github.com/your-username/GRAM/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/your-username/GRAM/discussions)
-- **Documentation**: [Wiki](https://github.com/your-username/GRAM/wiki)
+- **Issues**: [GitHub Issues](https://github.com/smoeina/GRAM/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/smoeina/GRAM/discussions)
+- **Documentation**: [Wiki](https://github.com/smoeina/GRAM/wiki)
 
 ---
 
