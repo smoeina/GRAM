@@ -1,0 +1,334 @@
+<svg viewBox="0 0 1400 900" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#333" />
+    </marker>
+    <pattern id="diagonalHatch" patternUnits="userSpaceOnUse" width="4" height="4">
+      <path d="M-1,1 l2,-2 M0,4 l4,-4 M3,5 l2,-2" stroke="#ccc" stroke-width="1"/>
+    </pattern>
+  </defs>
+  
+  <!-- Title -->
+  <text x="700" y="30" text-anchor="middle" font-family="Arial, sans-serif" font-size="20" font-weight="bold">Simple PTC GRAM: Hybrid Anomaly Detection Architecture</text>
+  
+  <!-- Phase 1: Data Loading -->
+  <g id="data-loading">
+    <rect x="50" y="60" width="250" height="120" fill="#e8f5e8" stroke="#4CAF50" stroke-width="2" rx="10"/>
+    <text x="175" y="85" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold">Phase 1: Data Loading</text>
+    
+    <!-- PTC Files -->
+    <rect x="70" y="100" width="70" height="30" fill="#C8E6C9" stroke="#4CAF50" stroke-width="1" rx="3"/>
+    <text x="105" y="115" text-anchor="middle" font-family="Arial, sans-serif" font-size="9">PTC Files</text>
+    <text x="105" y="125" text-anchor="middle" font-family="Arial, sans-serif" font-size="8">(.txt)</text>
+    
+    <!-- PTCDataLoader -->
+    <rect x="160" y="100" width="70" height="30" fill="#A5D6A7" stroke="#4CAF50" stroke-width="2" rx="3"/>
+    <text x="195" y="115" text-anchor="middle" font-family="Arial, sans-serif" font-size="9">PTC</text>
+    <text x="195" y="125" text-anchor="middle" font-family="Arial, sans-serif" font-size="9">Loader</text>
+    
+    <!-- Graph Objects -->
+    <g id="graph-objects">
+      <circle cx="85" cy="155" r="6" fill="#4CAF50" stroke="#333" stroke-width="1"/>
+      <circle cx="105" cy="145" r="6" fill="#4CAF50" stroke="#333" stroke-width="1"/>
+      <circle cx="105" cy="165" r="6" fill="#4CAF50" stroke="#333" stroke-width="1"/>
+      <circle cx="125" cy="155" r="6" fill="#4CAF50" stroke="#333" stroke-width="1"/>
+      <line x1="85" y1="155" x2="105" y2="145" stroke="#333" stroke-width="1"/>
+      <line x1="85" y1="155" x2="105" y2="165" stroke="#333" stroke-width="1"/>
+      <line x1="105" y1="145" x2="125" y2="155" stroke="#333" stroke-width="1"/>
+      <line x1="105" y1="165" x2="125" y2="155" stroke="#333" stroke-width="1"/>
+      
+      <circle cx="185" cy="155" r="6" fill="#4CAF50" stroke="#333" stroke-width="1"/>
+      <circle cx="205" cy="145" r="6" fill="#4CAF50" stroke="#333" stroke-width="1"/>
+      <circle cx="205" cy="165" r="6" fill="#4CAF50" stroke="#333" stroke-width="1"/>
+      <circle cx="225" cy="155" r="6" fill="#4CAF50" stroke="#333" stroke-width="1"/>
+      <line x1="185" y1="155" x2="205" y2="145" stroke="#333" stroke-width="1"/>
+      <line x1="185" y1="155" x2="205" y2="165" stroke="#333" stroke-width="1"/>
+      <line x1="205" y1="145" x2="225" y2="155" stroke="#333" stroke-width="1"/>
+      <line x1="205" y1="165" x2="225" y2="155" stroke="#333" stroke-width="1"/>
+      
+      <text x="155" y="155" text-anchor="middle" font-family="Arial, sans-serif" font-size="10">...</text>
+    </g>
+    
+    <!-- Arrows -->
+    <line x1="140" y1="115" x2="155" y2="115" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)"/>
+  </g>
+  
+  <!-- Phase 2: GRAM Feature Extraction -->
+  <g id="gram-feature-extraction">
+    <rect x="350" y="60" width="400" height="200" fill="#fff3e0" stroke="#FF9800" stroke-width="2" rx="10"/>
+    <text x="550" y="85" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold">Phase 2: GRAM Feature Extraction</text>
+    
+    <!-- Pre-trained Model Loading -->
+    <rect x="370" y="100" width="100" height="30" fill="#FFE0B2" stroke="#FF9800" stroke-width="2" rx="5"/>
+    <text x="420" y="115" text-anchor="middle" font-family="Arial, sans-serif" font-size="10">Load Pre-trained</text>
+    <text x="420" y="125" text-anchor="middle" font-family="Arial, sans-serif" font-size="10">GRAM Model</text>
+    
+    <!-- GRAM_Base Encoder -->
+    <rect x="500" y="100" width="120" height="30" fill="#FFCC80" stroke="#FF9800" stroke-width="2" rx="5"/>
+    <text x="560" y="115" text-anchor="middle" font-family="Arial, sans-serif" font-size="10">GRAM_Base</text>
+    <text x="560" y="125" text-anchor="middle" font-family="Arial, sans-serif" font-size="10">(Encoder Only)</text>
+    
+    <!-- Detailed GRAM_Base Architecture -->
+    <g id="gram-base-detail">
+      <!-- GCN -->
+      <rect x="380" y="150" width="60" height="25" fill="#FFE0B2" stroke="#FF9800" stroke-width="2" rx="3"/>
+      <text x="410" y="165" text-anchor="middle" font-family="Arial, sans-serif" font-size="9">GCN</text>
+      <text x="410" y="185" text-anchor="middle" font-family="Arial, sans-serif" font-size="8">H</text>
+      
+      <!-- MLP Branches -->
+      <rect x="460" y="140" width="40" height="20" fill="#E1F5FE" stroke="#03A9F4" stroke-width="1" rx="3"/>
+      <text x="480" y="152" text-anchor="middle" font-family="Arial, sans-serif" font-size="8">MLP₁</text>
+      <text x="480" y="130" text-anchor="middle" font-family="Arial, sans-serif" font-size="8">μ</text>
+      
+      <rect x="460" y="170" width="40" height="20" fill="#E1F5FE" stroke="#03A9F4" stroke-width="1" rx="3"/>
+      <text x="480" y="182" text-anchor="middle" font-family="Arial, sans-serif" font-size="8">MLP₂</text>
+      <text x="480" y="200" text-anchor="middle" font-family="Arial, sans-serif" font-size="8">log σ</text>
+      
+      <!-- Sampling -->
+      <circle cx="530" cy="165" r="12" fill="#FFF3E0" stroke="#FF9800" stroke-width="2"/>
+      <text x="530" y="169" text-anchor="middle" font-family="Arial, sans-serif" font-size="8">Z</text>
+      
+      <!-- Global Pooling -->
+      <rect x="560" y="150" width="50" height="25" fill="#E8F5E8" stroke="#4CAF50" stroke-width="2" rx="3"/>
+      <text x="585" y="160" text-anchor="middle" font-family="Arial, sans-serif" font-size="8">Global</text>
+      <text x="585" y="170" text-anchor="middle" font-family="Arial, sans-serif" font-size="8">Pool</text>
+      <text x="585" y="185" text-anchor="middle" font-family="Arial, sans-serif" font-size="8">z_global</text>
+      
+      <!-- Output -->
+      <rect x="630" y="140" width="60" height="35" fill="#E8F5E8" stroke="#4CAF50" stroke-width="2" rx="5"/>
+      <text x="660" y="155" text-anchor="middle" font-family="Arial, sans-serif" font-size="9">Output:</text>
+      <text x="660" y="165" text-anchor="middle" font-family="Arial, sans-serif" font-size="9">z_global, h</text>
+      
+      <!-- Arrows for GRAM_Base -->
+      <line x1="440" y1="162" x2="455" y2="150" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)"/>
+      <line x1="440" y1="162" x2="455" y2="180" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)"/>
+      <line x1="500" y1="150" x2="518" y2="157" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)"/>
+      <line x1="500" y1="180" x2="518" y2="173" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)"/>
+      <line x1="542" y1="165" x2="555" y2="165" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)"/>
+      <line x1="610" y1="162" x2="625" y2="162" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)"/>
+    </g>
+    
+    <!-- Output Note -->
+    <text x="660" y="195" text-anchor="middle" font-family="Arial, sans-serif" font-size="8">h: node embeddings</text>
+    <text x="660" y="205" text-anchor="middle" font-family="Arial, sans-serif" font-size="8">z_global: graph representation</text>
+  </g>
+  
+  <!-- Phase 3: Multi-Method Anomaly Scoring -->
+  <g id="anomaly-scoring">
+    <rect x="50" y="300" width="700" height="180" fill="#f3e5f5" stroke="#9C27B0" stroke-width="2" rx="10"/>
+    <text x="400" y="325" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold">Phase 3: Multi-Method Anomaly Scoring</text>
+    
+    <!-- Method 1: Distance-based -->
+    <rect x="70" y="345" width="120" height="40" fill="#E1BEE7" stroke="#9C27B0" stroke-width="1" rx="5"/>
+    <text x="130" y="360" text-anchor="middle" font-family="Arial, sans-serif" font-size="9">Distance-based</text>
+    <text x="130" y="375" text-anchor="middle" font-family="Arial, sans-serif" font-size="8">||h - mean_h||</text>
+    <text x="130" y="400" text-anchor="middle" font-family="Arial, sans-serif" font-size="8">Weight: 0.3</text>
+    
+    <!-- Method 2: Z-score -->
+    <rect x="210" y="345" width="120" height="40" fill="#E1BEE7" stroke="#9C27B0" stroke-width="1" rx="5"/>
+    <text x="270" y="360" text-anchor="middle" font-family="Arial, sans-serif" font-size="9">Z-score based</text>
+    <text x="270" y="375" text-anchor="middle" font-family="Arial, sans-serif" font-size="8">||(h-μ)/σ||</text>
+    <text x="270" y="400" text-anchor="middle" font-family="Arial, sans-serif" font-size="8">Weight: 0.3</text>
+    
+    <!-- Method 3: Reconstruction Error -->
+    <rect x="350" y="345" width="120" height="40" fill="#E1BEE7" stroke="#9C27B0" stroke-width="1" rx="5"/>
+    <text x="410" y="360" text-anchor="middle" font-family="Arial, sans-serif" font-size="9">Reconstruction</text>
+    <text x="410" y="375" text-anchor="middle" font-family="Arial, sans-serif" font-size="8">Σ(h - mean_h)²</text>
+    <text x="410" y="400" text-anchor="middle" font-family="Arial, sans-serif" font-size="8">Weight: 0.3</text>
+    
+    <!-- Method 4: Degree Anomaly -->
+    <rect x="490" y="345" width="120" height="40" fill="#E1BEE7" stroke="#9C27B0" stroke-width="1" rx="5"/>
+    <text x="550" y="360" text-anchor="middle" font-family="Arial, sans-serif" font-size="9">Degree Anomaly</text>
+    <text x="550" y="375" text-anchor="middle" font-family="Arial, sans-serif" font-size="8">|deg - mean_deg|</text>
+    <text x="550" y="400" text-anchor="middle" font-family="Arial, sans-serif" font-size="8">Weight: 0.1</text>
+    
+    <!-- Combination -->
+    <rect x="630" y="345" width="100" height="40" fill="#CE93D8" stroke="#9C27B0" stroke-width="2" rx="5"/>
+    <text x="680" y="360" text-anchor="middle" font-family="Arial, sans-serif" font-size="10">Combined</text>
+    <text x="680" y="375" text-anchor="middle" font-family="Arial, sans-serif" font-size="10">Anomaly Score</text>
+    
+    <!-- Enhanced Features -->
+    <rect x="300" y="420" width="200" height="40" fill="#F8BBD9" stroke="#E91E63" stroke-width="2" rx="5"/>
+    <text x="400" y="435" text-anchor="middle" font-family="Arial, sans-serif" font-size="11">Enhanced Feature Vector</text>
+    <text x="400" y="450" text-anchor="middle" font-family="Arial, sans-serif" font-size="9">[h, distances, z_scores, recon_error, degree_anomaly]</text>
+    
+    <!-- Arrows for scoring -->
+    <line x1="190" y1="365" x2="625" y2="365" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)"/>
+    <line x1="330" y1="365" x2="625" y2="365" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)"/>
+    <line x1="470" y1="365" x2="625" y2="365" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)"/>
+    <line x1="610" y1="365" x2="625" y2="365" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)"/>
+    <line x1="680" y1="385" x2="400" y2="415" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)"/>
+  </g>
+  
+  <!-- Phase 4: Traditional ML Classification -->
+  <g id="ml-classification">
+    <rect x="800" y="60" width="550" height="420" fill="#e3f2fd" stroke="#2196F3" stroke-width="2" rx="10"/>
+    <text x="1075" y="85" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold">Phase 4: Traditional ML Classification</text>
+    
+    <!-- Data Preparation -->
+    <rect x="820" y="100" width="150" height="30" fill="#BBDEFB" stroke="#2196F3" stroke-width="2" rx="5"/>
+    <text x="895" y="118" text-anchor="middle" font-family="Arial, sans-serif" font-size="10">Data Preparation</text>
+    <text x="895" y="145" text-anchor="middle" font-family="Arial, sans-serif" font-size="8">Filter, Split, Scale</text>
+    
+    <!-- Classifiers Grid -->
+    <g id="classifiers">
+      <!-- Row 1 -->
+      <rect x="820" y="170" width="90" height="25" fill="#E3F2FD" stroke="#2196F3" stroke-width="1" rx="3"/>
+      <text x="865" y="185" text-anchor="middle" font-family="Arial, sans-serif" font-size="8">Random Forest</text>
+      
+      <rect x="920" y="170" width="90" height="25" fill="#E3F2FD" stroke="#2196F3" stroke-width="1" rx="3"/>
+      <text x="965" y="185" text-anchor="middle" font-family="Arial, sans-serif" font-size="8">Gradient Boost</text>
+      
+      <rect x="1020" y="170" width="90" height="25" fill="#E3F2FD" stroke="#2196F3" stroke-width="1" rx="3"/>
+      <text x="1065" y="185" text-anchor="middle" font-family="Arial, sans-serif" font-size="8">Extra Trees</text>
+      
+      <rect x="1120" y="170" width="90" height="25" fill="#E3F2FD" stroke="#2196F3" stroke-width="1" rx="3"/>
+      <text x="1165" y="185" text-anchor="middle" font-family="Arial, sans-serif" font-size="8">AdaBoost</text>
+      
+      <rect x="1220" y="170" width="90" height="25" fill="#E3F2FD" stroke="#2196F3" stroke-width="1" rx="3"/>
+      <text x="1265" y="185" text-anchor="middle" font-family="Arial, sans-serif" font-size="8">Neural Network</text>
+      
+      <!-- Row 2 -->
+      <rect x="820" y="210" width="90" height="25" fill="#E3F2FD" stroke="#2196F3" stroke-width="1" rx="3"/>
+      <text x="865" y="225" text-anchor="middle" font-family="Arial, sans-serif" font-size="8">SVM</text>
+      
+      <rect x="920" y="210" width="90" height="25" fill="#E3F2FD" stroke="#2196F3" stroke-width="1" rx="3"/>
+      <text x="965" y="225" text-anchor="middle" font-family="Arial, sans-serif" font-size="8">Logistic Reg.</text>
+      
+      <rect x="1020" y="210" width="90" height="25" fill="#E3F2FD" stroke="#2196F3" stroke-width="1" rx="3"/>
+      <text x="1065" y="225" text-anchor="middle" font-family="Arial, sans-serif" font-size="8">K-NN</text>
+      
+      <rect x="1120" y="210" width="90" height="25" fill="#E3F2FD" stroke="#2196F3" stroke-width="1" rx="3"/>
+      <text x="1165" y="225" text-anchor="middle" font-family="Arial, sans-serif" font-size="8">Naive Bayes</text>
+      
+      <rect x="1220" y="210" width="90" height="25" fill="#E3F2FD" stroke="#2196F3" stroke-width="1" rx="3"/>
+      <text x="1265" y="225" text-anchor="middle" font-family="Arial, sans-serif" font-size="8">Decision Tree</text>
+    </g>
+    
+    <!-- Cross-Validation -->
+    <rect x="820" y="260" width="200" height="30" fill="#90CAF9" stroke="#2196F3" stroke-width="2" rx="5"/>
+    <text x="920" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="10">5-Fold Cross-Validation</text>
+    
+    <!-- Evaluation Metrics -->
+    <rect x="1050" y="260" width="200" height="30" fill="#90CAF9" stroke="#2196F3" stroke-width="2" rx="5"/>
+    <text x="1150" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="10">Evaluation Metrics</text>
+    
+    <!-- Results -->
+    <rect x="820" y="310" width="490" height="60" fill="#BBDEFB" stroke="#2196F3" stroke-width="2" rx="5"/>
+    <text x="1065" y="330" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold">Results & Analysis</text>
+    <text x="850" y="350" font-family="Arial, sans-serif" font-size="10">• Accuracy, Precision, Recall, F1-Score</text>
+    <text x="850" y="365" font-family="Arial, sans-serif" font-size="10">• Model comparison and ranking</text>
+    
+    <text x="1100" y="350" font-family="Arial, sans-serif" font-size="10">• Cross-validation performance</text>
+    <text x="1100" y="365" font-family="Arial, sans-serif" font-size="10">• Statistical significance testing</text>
+    
+    <!-- Best Model Selection -->
+    <rect x="820" y="390" width="200" height="40" fill="#64B5F6" stroke="#2196F3" stroke-width="3" rx="5"/>
+    <text x="920" y="408" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold">Best Model</text>
+    <text x="920" y="420" text-anchor="middle" font-family="Arial, sans-serif" font-size="10">Selection</text>
+  </g>
+  
+  <!-- Phase 5: Visualization and Reporting -->
+  <g id="visualization">
+    <rect x="800" y="500" width="550" height="140" fill="#f1f8e9" stroke="#8BC34A" stroke-width="2" rx="10"/>
+    <text x="1075" y="525" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold">Phase 5: Visualization &amp; Reporting</text>
+    
+    <!-- Visualization Components -->
+    <rect x="820" y="545" width="120" height="30" fill="#C8E6C9" stroke="#4CAF50" stroke-width="1" rx="3"/>
+    <text x="880" y="563" text-anchor="middle" font-family="Arial, sans-serif" font-size="9">Anomaly Distribution</text>
+    
+    <rect x="960" y="545" width="120" height="30" fill="#C8E6C9" stroke="#4CAF50" stroke-width="1" rx="3"/>
+    <text x="1020" y="563" text-anchor="middle" font-family="Arial, sans-serif" font-size="9">Model Comparison</text>
+    
+    <rect x="1100" y="545" width="120" height="30" fill="#C8E6C9" stroke="#4CAF50" stroke-width="1" rx="3"/>
+    <text x="1160" y="563" text-anchor="middle" font-family="Arial, sans-serif" font-size="9">Confusion Matrices</text>
+    
+    <rect x="1240" y="545" width="90" height="30" fill="#C8E6C9" stroke="#4CAF50" stroke-width="1" rx="3"/>
+    <text x="1285" y="563" text-anchor="middle" font-family="Arial, sans-serif" font-size="9">CSV Export</text>
+    
+    <!-- Summary -->
+    <rect x="820" y="590" width="490" height="35" fill="#DCEDC8" stroke="#8BC34A" stroke-width="2" rx="5"/>
+    <text x="1065" y="608" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold">Comprehensive Performance Report</text>
+    <text x="1065" y="620" text-anchor="middle" font-family="Arial, sans-serif" font-size="9">Top-3 models, statistical analysis, and actionable insights</text>
+  </g>
+  
+  <!-- Main Flow Arrows -->
+  <line x1="300" y1="120" x2="345" y2="120" stroke="#333" stroke-width="3" marker-end="url(#arrowhead)"/>
+  <line x1="550" y1="260" x2="550" y2="295" stroke="#333" stroke-width="3" marker-end="url(#arrowhead)"/>
+  <line x1="750" y1="380" x2="795" y2="300" stroke="#333" stroke-width="3" marker-end="url(#arrowhead)"/>
+  <line x1="1075" y1="480" x2="1075" y2="495" stroke="#333" stroke-width="3" marker-end="url(#arrowhead)"/>
+  
+  <!-- Key Innovation Callouts -->
+  <g id="innovations">
+    <rect x="50" y="700" width="1300" height="180" fill="#fff8e1" stroke="#FFC107" stroke-width="2" rx="10"/>
+    <text x="700" y="725" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold">Key Innovations in Simple PTC GRAM</text>
+    
+    <!-- Innovation 1 -->
+    <rect x="70" y="745" width="200" height="60" fill="#FFF3E0" stroke="#FF9800" stroke-width="2" rx="5"/>
+    <text x="170" y="765" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold">Hybrid Architecture</text>
+    <text x="170" y="780" text-anchor="middle" font-family="Arial, sans-serif" font-size="9">GRAM encoder as</text>
+    <text x="170" y="792" text-anchor="middle" font-family="Arial, sans-serif" font-size="9">feature extractor +</text>
+    <text x="170" y="802" text-anchor="middle" font-family="Arial, sans-serif" font-size="9">Traditional ML</text>
+    
+    <!-- Innovation 2 -->
+    <rect x="290" y="745" width="200" height="60" fill="#F3E5F5" stroke="#9C27B0" stroke-width="2" rx="5"/>
+    <text x="390" y="765" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold">Multi-Method Scoring</text>
+    <text x="390" y="780" text-anchor="middle" font-family="Arial, sans-serif" font-size="9">4 different anomaly</text>
+    <text x="390" y="792" text-anchor="middle" font-family="Arial, sans-serif" font-size="9">detection methods</text>
+    <text x="390" y="802" text-anchor="middle" font-family="Arial, sans-serif" font-size="9">combined</text>
+    
+    <!-- Innovation 3 -->
+    <rect x="510" y="745" width="200" height="60" fill="#E3F2FD" stroke="#2196F3" stroke-width="2" rx="5"/>
+    <text x="610" y="765" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold">Comprehensive ML</text>
+    <text x="610" y="780" text-anchor="middle" font-family="Arial, sans-serif" font-size="9">10 different classifiers</text>
+    <text x="610" y="792" text-anchor="middle" font-family="Arial, sans-serif" font-size="9">with cross-validation</text>
+    <text x="610" y="802" text-anchor="middle" font-family="Arial, sans-serif" font-size="9">and robust evaluation</text>
+    
+    <!-- Innovation 4 -->
+    <rect x="730" y="745" width="200" height="60" fill="#E8F5E8" stroke="#4CAF50" stroke-width="2" rx="5"/>
+    <text x="830" y="765" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold">Enhanced Features</text>
+    <text x="830" y="780" text-anchor="middle" font-family="Arial, sans-serif" font-size="9">Concatenation of</text>
+    <text x="830" y="792" text-anchor="middle" font-family="Arial, sans-serif" font-size="9">embeddings + all</text>
+    <text x="830" y="802" text-anchor="middle" font-family="Arial, sans-serif" font-size="9">anomaly scores</text>
+    
+    <!-- Innovation 5 -->
+    <rect x="950" y="745" width="200" height="60" fill="#FFF3E0" stroke="#FF9800" stroke-width="2" rx="5"/>
+    <text x="1050" y="765" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold">Specialized for PTC</text>
+    <text x="1050" y="780" text-anchor="middle" font-family="Arial, sans-serif" font-size="9">Custom data loader</text>
+    <text x="1050" y="792" text-anchor="middle" font-family="Arial, sans-serif" font-size="9">and preprocessing</text>
+    <text x="1050" y="802" text-anchor="middle" font-family="Arial, sans-serif" font-size="9">for PTC dataset</text>
+    
+    <!-- Innovation 6 -->
+    <rect x="1170" y="745" width="160" height="60" fill="#F1F8E9" stroke="#8BC34A" stroke-width="2" rx="5"/>
+    <text x="1250" y="765" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold">Rich Visualization</text>
+    <text x="1250" y="780" text-anchor="middle" font-family="Arial, sans-serif" font-size="9">Professional plots</text>
+    <text x="1250" y="792" text-anchor="middle" font-family="Arial, sans-serif" font-size="9">and comprehensive</text>
+    <text x="1250" y="802" text-anchor="middle" font-family="Arial, sans-serif" font-size="9">reporting</text>
+    
+    <!-- Key Differences -->
+    <text x="70" y="835" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#D32F2F">Key Differences from Original GRAM:</text>
+    <text x="90" y="855" font-family="Arial, sans-serif" font-size="10">• No end-to-end training - uses pre-trained encoder only</text>
+    <text x="90" y="870" font-family="Arial, sans-serif" font-size="10">• Multiple anomaly scoring methods instead of single gradient-based approach</text>
+    
+    <text x="700" y="855" font-family="Arial, sans-serif" font-size="10">• Traditional ML classifiers for final decision instead of threshold-based detection</text>
+    <text x="700" y="870" font-family="Arial, sans-serif" font-size="10">• Focus on PTC dataset with specialized data loading and feature engineering</text>
+  </g>
+  
+  <!-- Legend -->
+  <g id="legend">
+    <rect x="50" y="60" width="15" height="10" fill="#e8f5e8" stroke="#4CAF50"/>
+    <text x="70" y="68" font-family="Arial, sans-serif" font-size="8">Data Loading</text>
+    
+    <rect x="150" y="60" width="15" height="10" fill="#fff3e0" stroke="#FF9800"/>
+    <text x="170" y="68" font-family="Arial, sans-serif" font-size="8">GRAM Feature Extraction</text>
+    
+    <rect x="280" y="60" width="15" height="10" fill="#f3e5f5" stroke="#9C27B0"/>
+    <text x="300" y="68" font-family="Arial, sans-serif" font-size="8">Anomaly Scoring</text>
+    
+    <rect x="380" y="60" width="15" height="10" fill="#e3f2fd" stroke="#2196F3"/>
+    <text x="400" y="68" font-family="Arial, sans-serif" font-size="8">ML Classification</text>
+    
+    <rect x="480" y="60" width="15" height="10" fill="#f1f8e9" stroke="#8BC34A"/>
+    <text x="500" y="68" font-family="Arial, sans-serif" font-size="8">Visualization</text>
+  </g>
+</svg>
